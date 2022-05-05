@@ -88,9 +88,10 @@
 
 .movies-button {
   display: flex;
+  justify-content: center;
   align-items: center;
   height: 2rem;
-  width: 12vw;
+  width: 12rem;
   position: absolute;
   bottom: 2rem;
 }

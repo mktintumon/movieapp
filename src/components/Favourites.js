@@ -8,7 +8,8 @@ export class Favourites extends Component {
         super()
 
         this.state = {
-            genres: []
+            genres: [],
+            currgenre : 'All genres'
         }
     }
 
@@ -57,8 +58,9 @@ export class Favourites extends Component {
 
                             {
                                 tempArr.map((genres) => (
+                                    this.state.currgenre == genres ?
+                                    <li style={{backgroundColor:'#3f51b5' , color:'white' , fontWeight:'bold'}} class="list-group-item">{genres}</li> :
                                     <li class="list-group-item">{genres}</li>
-
                                 ))
                             }
 
