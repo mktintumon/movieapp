@@ -9,8 +9,10 @@ export class Favourites extends Component {
     this.state = {
       genres: [],
       currgenre: "All genres",
-      currText : '',
+      currText: '',
       movies: [],
+      limit : 5,
+      currPage : 1,
     };
   }
 
@@ -52,55 +54,71 @@ export class Favourites extends Component {
     });
   }
 
-  handleGenreChange =(genre)=>{
-         this.setState({
-           currgenre : genre // action
-         })
+  handleGenreChange = (genre) => {
+    this.setState({
+      currgenre: genre // action
+    })
   }
 
-  sortPopularityDesc=()=>{
-      let temp = this.state.movies
-      temp.sort(function(objA , objB){
-         return objB.popularity-objA.popularity
-      })
+  sortPopularityDesc = () => {
+    let temp = this.state.movies
+    temp.sort(function (objA, objB) {
+      return objB.popularity - objA.popularity
+    })
 
-      this.setState({
-         movies : [...temp]
-      })
+    this.setState({
+      movies: [...temp]
+    })
   }
 
-  sortPopularityAsc=()=>{
-	let temp = this.state.movies
-	temp.sort(function(objA , objB){
-	   return objA.popularity-objB.popularity
-	})
+  sortPopularityAsc = () => {
+    let temp = this.state.movies
+    temp.sort(function (objA, objB) {
+      return objA.popularity - objB.popularity
+    })
 
-	this.setState({
-	   movies : [...temp]
-	})
-}
+    this.setState({
+      movies: [...temp]
+    })
+  }
 
-sortRatingDesc=()=>{
-	let temp = this.state.movies
-	temp.sort(function(objA , objB){
-	   return objB.vote_average-objA.vote_average
-	})
+  sortRatingDesc = () => {
+    let temp = this.state.movies
+    temp.sort(function (objA, objB) {
+      return objB.vote_average - objA.vote_average
+    })
 
-	this.setState({
-	   movies : [...temp]
-	})
-}
+    this.setState({
+      movies: [...temp]
+    })
+  }
 
-sortRatingAsc=()=>{
-	let temp = this.state.movies
-	temp.sort(function(objA , objB){
-	   return objA.vote_average-objB.vote_average
-	})
+  sortRatingAsc = () => {
+    let temp = this.state.movies
+    temp.sort(function (objA, objB) {
+      return objA.vote_average - objB.vote_average
+    })
 
-	this.setState({
-	   movies : [...temp]
-	})
-}
+    this.setState({
+      movies: [...temp]
+    })
+  }
+
+  handleDelete = (id) => {
+    let newArr = []
+    newArr = this.state.movies.filter((movieObj) => movieObj.id != id)
+    this.setState({
+      movies: [...newArr]
+    })
+
+    localStorage.setItem("movies-app", JSON.stringify(newArr))
+  }
+
+  handlePageChange=(page)=>{
+    this.setState({
+        currPage:page
+    })
+  }
 
   render() {
     let genreids = {
@@ -127,21 +145,31 @@ sortRatingAsc=()=>{
 
     let filterArr = []
 
-    if(this.state.currText===''){
+    if (this.state.currText === '') {
       filterArr = this.state.movies
     }
 
-    else{
-      filterArr = this.state.movies.filter((movieObj)=>{
+    else {
+      filterArr = this.state.movies.filter((movieObj) => {
         let title = movieObj.original_title.toLowerCase();
         return title.includes(this.state.currText.toLowerCase().trim())
       })
     }
-    
 
-    if(this.state.currgenre!=='All genres'){
-       filterArr = this.state.movies.filter((movieObj)=> genreids[movieObj.genre_ids[0]]==this.state.currgenre)
+
+    if (this.state.currgenre !== 'All genres') {
+      filterArr = this.state.movies.filter((movieObj) => genreids[movieObj.genre_ids[0]] == this.state.currgenre)
     }
+
+    // sort pagination by count 
+    let pages = Math.ceil(filterArr.length/this.state.limit);
+    let pagesarr = [];
+    for(let i=1;i<=pages;i++){
+        pagesarr.push(i);
+    }
+    let si = (this.state.currPage-1)*this.state.limit;
+    let ei = si+this.state.limit;
+    filterArr = filterArr.slice(si,ei)
 
     return (
       <div className="main">
@@ -161,7 +189,7 @@ sortRatingAsc=()=>{
                     {genre}
                   </li>
                 ) : (
-                  <li style={{ color: "#3f51b5" }} class="list-group-item" onClick={()=>this.handleGenreChange(genre)}>
+                  <li style={{ color: "#3f51b5" }} class="list-group-item" onClick={() => this.handleGenreChange(genre)}>
                     {genre}
                   </li>
                 )
@@ -174,10 +202,13 @@ sortRatingAsc=()=>{
                 placeholder="Search"
                 type="text"
                 className="input-group-text col"
-                 value={this.state.currText} onChange={(e)=> this.setState({currText : e.target.value})}
-                
+                value={this.state.currText} onChange={(e) => this.setState({ currText: e.target.value })}
+
               />
-              <input type="number" className="input-group-text col" />
+              <input type="number" className="input-group-text col" 
+              placeholder="Rows Count" 
+              value={this.state.limit} 
+              onChange={(e)=>this.setState({limit:e.target.value})} />
             </div>
 
             <div className="row">
@@ -206,7 +237,7 @@ sortRatingAsc=()=>{
                       <td>{movieElem.popularity}</td>
                       <td>{movieElem.vote_average}</td>
                       <td>
-                        <button type="button" class="btn btn-danger">
+                        <button type="button" class="btn btn-danger" onClick={() => this.handleDelete(movieElem.id)}>
                           Delete
                         </button>
                       </td>
@@ -217,31 +248,11 @@ sortRatingAsc=()=>{
             </div>
             <nav aria-label="Page navigation example">
               <ul class="pagination">
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    Previous
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    1
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    2
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    3
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    Next
-                  </a>
-                </li>
+                {
+                  pagesarr.map((page) => (
+                    <li class="page-item"><a class="page-link" onClick={() => this.handlePageChange(page)}>{page}</a></li>
+                  ))
+                }
               </ul>
             </nav>
           </div>
